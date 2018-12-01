@@ -19,10 +19,13 @@ func main() {
 	r := bufio.NewScanner(b)
 
 	var frequency int
+	var freqs = make(map[int]bool)
+	var numbers []string
 
 	for r.Scan() {
 		path := r.Text()
 
+		numbers = append(numbers, path)
 
 		if strings.HasPrefix(path, "+"){
 			path = strings.TrimPrefix(path, "+")
@@ -30,16 +33,51 @@ func main() {
 			nr, _ := strconv.Atoi(path)
 
 			frequency += nr
+
 		}else if strings.HasPrefix(path, "-"){
 			path = strings.TrimPrefix(path, "-")
 
 			nr, _ := strconv.Atoi(path)
 
 			frequency -= nr
+
 		}
 
 	}
 
+	//PART 1:
+	fmt.Printf("Part 1: %v\n", frequency)
 
-	fmt.Println(frequency)
+	found := 0
+
+	frequency1 := 0
+
+	for found < 1{
+		for i := 0; i < len(numbers); i++{
+			if strings.HasPrefix(numbers[i], "+"){
+				temp := strings.TrimPrefix(numbers[i], "+")
+
+				nr, _ := strconv.Atoi(temp)
+
+				frequency1 += nr
+
+			}else if strings.HasPrefix(numbers[i], "-"){
+				temp := strings.TrimPrefix(numbers[i], "-")
+
+				nr, _ := strconv.Atoi(temp)
+
+				frequency1 -= nr
+
+
+			}
+
+			if freqs[frequency1] == false{
+				freqs[frequency1] = true
+			}else{
+				fmt.Printf("Part 2: %v\n",frequency1)
+				found++
+				os.Exit(0)
+			}
+		}
+	}
 }
