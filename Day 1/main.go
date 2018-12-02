@@ -19,7 +19,6 @@ func main() {
 	r := bufio.NewScanner(b)
 
 	var frequency int
-	var freqs = make(map[int]bool)
 	var numbers []string
 
 	for r.Scan() {
@@ -49,7 +48,7 @@ func main() {
 	fmt.Printf("Part 1: %v\n", frequency)
 
 	found := 0
-
+	var freqs = make(map[int]bool)
 	frequency1 := 0
 
 	for found < 1{
