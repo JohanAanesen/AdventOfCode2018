@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func main() {
@@ -31,13 +34,73 @@ func main() {
 
 		fmt.Sscanf(line, "[%10s %5s]%s %s\n", &dateString, &timeString, &guardString, &nrString)
 
-		//t, _ := time.Parse("1518-10-06 00:50", "2006-01-02T15:04:05Z")
-
-		fmt.Printf("Test: %s\n", guardString)
 		values = append(values, dateString+" "+timeString+" "+guardString+" "+nrString)
 
 	}
 	sort.Strings(values)
 
-	fmt.Printf("TEST: %v\n", values)
+
+	timeFormat := "2006-01-02 15:04 MST"
+	var guardsSleepTable = make(map[string][]int)
+	var guardsSleep = make(map[string]int)
+
+	currentGuard := ""
+	var sleepTime time.Time
+	var wakeUpTime time.Time
+	sleepMinute := 0
+
+	for _, val := range values{
+		vals := strings.Split(val, " ")
+		if vals[2] == "Guard"{
+			currentGuard = vals[3]
+			if guardsSleepTable[currentGuard] == nil{
+				guardsSleepTable[currentGuard] = make([]int, 60)
+			}
+		}else if vals[2] == "wakes"{
+			wakeUpTime, _ = time.Parse(timeFormat, vals[0]+" "+vals[1]+" UTC")
+
+			diff := int(wakeUpTime.Sub(sleepTime).Minutes())
+
+			guardsSleep[currentGuard] += diff
+
+
+			for i := 0; i < diff; i++{
+				if sleepMinute == 60{
+					sleepMinute = 0
+				}
+				guardsSleepTable[currentGuard][sleepMinute]++
+
+				sleepMinute++
+			}
+		}else if vals[2] == "falls"{
+			sleepTime, _ = time.Parse(timeFormat, vals[0]+" "+vals[1]+" UTC")
+			sleepMinute = sleepTime.Minute()
+		}
+	}
+
+	sleepsTheMost := ""
+	timeSlept := 0
+	minuteSleptMost := 0
+	theMinute := 0
+	for i, val := range guardsSleep{
+		if val > timeSlept{
+			timeSlept = val
+			sleepsTheMost = i
+		}
+	}
+
+	for i := 0; i < 60; i++{
+		if guardsSleepTable[sleepsTheMost][i] > minuteSleptMost{
+			minuteSleptMost = guardsSleepTable[sleepsTheMost][i]
+			theMinute = i
+		}
+	}
+
+	sleepsTheMost = strings.TrimPrefix(sleepsTheMost, "#")
+
+	guardNr, _ := strconv.Atoi(sleepsTheMost)
+
+	fmt.Println(guardNr)
+	fmt.Println(theMinute)
+	fmt.Printf("Part 1: %v\n", guardNr*theMinute)
 }
